@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "188774268246",
+    "project_id": "chatium-ee362",
+    "storage_bucket": "chatium-ee362.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:188774268246:android:90a74cbac5226e60c86af7",
+        "android_client_info": {
+          "package_name": "ru.infinity_coder.chatiumapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "188774268246-c6npv9477lj43to3626dgkhm56ip1cjn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARYD9sOD2GvrpmbhBb3EnXBMqlSRktn2Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "188774268246-c6npv9477lj43to3626dgkhm56ip1cjn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
