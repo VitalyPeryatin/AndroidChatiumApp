@@ -16,8 +16,9 @@ import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import ru.infinity_coder.chatiumapp.data.preferences.AuthTokenPreferences
 
-const val BASE_URL = "https://localhost/"
+const val LOCAL_BASE_URL = "https://10.0.2.2:8443/"
 
 val webSocketKtorHttpClient = HttpClient(OkHttp) {
 
@@ -51,7 +52,7 @@ fun HttpClientConfig<out HttpClientEngineConfig>.installLogging() {
     install(Logging) {
         logger = object : Logger {
             override fun log(message: String) {
-                android.util.Log.v("Logger Ktor =>", message)
+                Log.v("Logger Ktor =>", message)
             }
         }
         level = io.ktor.client.features.logging.LogLevel.ALL
@@ -69,5 +70,10 @@ fun HttpClientConfig<out HttpClientEngineConfig>.installResponseObserver() {
 fun HttpClientConfig<out HttpClientEngineConfig>.installDefaultRequest() {
     install(DefaultRequest) {
         header(HttpHeaders.ContentType, ContentType.Application.Json)
+
+        val token = AuthTokenPreferences.getTokenSync()
+        if (token != null) {
+            header(HttpHeaders.Authorization, "Bearer $token")
+        }
     }
 }

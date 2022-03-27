@@ -1,22 +1,13 @@
 package ru.infinity_coder.chatiumapp.data
 
-import android.content.Context
 import android.util.Log
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
-import ru.infinity_coder.chatiumapp.core.App
 import ru.infinity_coder.chatiumapp.core.wrappers.ActivityWrapper
+import ru.infinity_coder.chatiumapp.data.preferences.AuthTokenPreferences
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -26,8 +17,7 @@ object AuthorizationRepository {
     private var smsCodeVerificationId = ""
     private var smsCodeToken: PhoneAuthProvider.ForceResendingToken? = null
     private val auth = Firebase.auth
-    private val Context.authTokenPreferences: DataStore<Preferences> by preferencesDataStore(name = "authToken")
-    private val tokenKey = stringPreferencesKey("token")
+    private val authService = AuthService()
 
     suspend fun verifyVerificationCode(
         activityWrapper: ActivityWrapper,
@@ -37,7 +27,10 @@ object AuthorizationRepository {
             val credential = PhoneAuthProvider.getCredential(smsCodeVerificationId, code)
             val user = signInFirebase(activityWrapper, credential)
             val token = signInServer(user)
-            saveToken(token)
+            val isLoginSuccessful = authService.login(token)
+            if (isLoginSuccessful) {
+                AuthTokenPreferences.saveToken(token)
+            }
         } catch (e: Exception) {
             Log.e("mLog", "verifyVerificationCode: " + e::class.java.simpleName)
             return false
@@ -46,7 +39,7 @@ object AuthorizationRepository {
     }
 
     fun isUserSignedIn(): Boolean {
-        return auth.currentUser != null && hasValidToken()
+        return auth.currentUser != null && AuthTokenPreferences.getTokenSync() != null
     }
 
     private suspend fun signInFirebase(
@@ -92,22 +85,6 @@ object AuthorizationRepository {
                 continuation.resume(it.result.token.orEmpty())
             }
         }
-    }
-
-    private suspend fun saveToken(token: String) {
-        App.appContext.authTokenPreferences.edit { preferences ->
-            preferences[tokenKey] = token
-        }
-    }
-
-    private suspend fun getToken(): String? {
-        return App.appContext.authTokenPreferences.data
-            .map { it[tokenKey] }
-            .firstOrNull()
-    }
-
-    private fun hasValidToken(): Boolean {
-        return runBlocking { getToken() != null }
     }
 
     fun saveSmsCodeCredentials(
